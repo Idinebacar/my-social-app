@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="mb-4 text-center">Search Posts</h2>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Search keywords or posts..." name="search" value="{{ search|default:'' }}">
+                            <button class="btn btn-primary" type="submit">Search</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% if search %}
+                <h4 class="mb-3">Results for "{{ search }}"</h4>
+
+                {% if searched %}
+                    {% for post in searched %}
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-body">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0 me-3">
+                                    {% if post.user.profile.profile_image %}
+                                    <img src="{{ post.user.profile.profile_image.url }}" width="50" height="50"
+                                        class="rounded-circle object-fit-cover" alt="{{ post.user.username }}">
+                                    {% else %}
+                                    <img src="{% static 'images/default_profile_pic.png' %}" width="50" height="50"
+                                        class="rounded-circle object-fit-cover" alt="{{ post.user.username }}">
+                                    {% endif %}
+                                </div>
+
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 fw-bold">
+                                        <a href="{% url 'profile' post.user.id %}" class="text-dark text-decoration-none">@{{ post.user.username }}</a>
+                                    </h6>
+                                    <p class="mb-2">{{ post.content }}</p>
+
+                                    {% if post.post_image %}
+                                    <div class="mb-3">
+                                        <img src="{{ post.post_image.url }}" class="img-fluid rounded shadow-sm" style="max-height: 350px; width: 100%; object-fit: cover;" alt="Post image">
+                                    </div>
+                                    {% endif %}
+
+                                    <div class="d-flex align-items-center text-muted small">
+                                        <span class="me-3">{{ post.created_at|date:"M d, Y, H:i" }}</span>
+                                        <span class="me-3">
+                                            {{ post.like_count }}
+                                            {% if user in post.liked_by.all %}
+                                            <a href="{% url 'post_like' post.id %}" class="text-decoration-none ms-1">
+                                                <i class="fa-solid fa-heart text-danger"></i>
+                                            </a>
+                                            {% else %}
+                                            <a href="{% url 'post_like' post.id %}" class="text-decoration-none ms-1">
+                                                <i class="fa fa-heart-o text-danger"></i>
+                                            </a>
+                                            {% endif %}
+                                        </span>
+                                        <a href="{% url 'post_show' post.id %}" class="text-decoration-none text-muted">
+                                            <i class="fa-solid fa-share"></i> Share
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-warning">No posts found matching your search.</div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

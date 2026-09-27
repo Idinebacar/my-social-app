@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Community Profiles</h2>
+
+    {% if profiles %}
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        {% for profile in profiles %}
+        <div class="col">
+            <div class="card shadow-sm h-100">
+                <div class="row g-0 align-items-center h-100">
+                    <div class="col-4 text-center p-3">
+                        {% if profile.profile_image %}
+                        <img src="{{ profile.profile_image.url }}" width="90" height="90" class="rounded-circle shadow-sm object-fit-cover"
+                            alt="{{ profile.user.username }}">
+                        {% else %}
+                        <img src="{% static 'images/default_profile_pic.png' %}" width="90" height="90" class="rounded-circle shadow-sm object-fit-cover"
+                            alt="Profile Image">
+                        {% endif %}
+                    </div>
+                    <div class="col-8">
+                        <div class="card-body">
+                            <h5 class="card-title mb-1">{{ profile.user.get_full_name|default:profile.user.username }}</h5>
+                            <p class="card-text mb-2">
+                                <a href="{% url 'profile' profile.user.id %}" class="text-decoration-none text-muted">@{{ profile.user.username|lower }}</a>
+                            </p>
+                            <a href="{% url 'profile' profile.user.id %}" class="btn btn-outline-primary btn-sm">View Profile</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">No profiles found.</div>
+    {% endif %}
+</div>
+
+{% endblock %}

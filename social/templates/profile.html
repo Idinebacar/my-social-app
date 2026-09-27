@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+{% if profile %}
+<div class="container py-4">
+    <div class="row">
+        <!-- User Posts Column -->
+        <div class="col-lg-8 mb-4">
+            <h2 class="mb-4">@{{ profile.user.username }}'s Posts</h2>
+
+            {% if posts %}
+                {% for post in posts %}
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0 me-3">
+                                {% if profile.profile_image %}
+                                <img src="{{ profile.profile_image.url }}" width="50" height="50"
+                                    class="rounded-circle object-fit-cover" alt="{{ profile.user.username }}">
+                                {% else %}
+                                <img src="{% static 'images/default_profile_pic.png' %}" width="50" height="50"
+                                    class="rounded-circle object-fit-cover" alt="{{ profile.user.username }}">
+                                {% endif %}
+                            </div>
+
+                            <div class="flex-grow-1">
+                                <p class="mb-2">{{ post.content }}</p>
+
+                                {% if post.post_image %}
+                                <div class="mb-3">
+                                    <img src="{{ post.post_image.url }}" class="img-fluid rounded shadow-sm" style="max-height: 350px; width: 100%; object-fit: cover;" alt="Post image">
+                                </div>
+                                {% endif %}
+
+                                <div class="d-flex align-items-center text-muted small flex-wrap gap-3">
+                                    <span>{{ post.created_at|date:"M d, Y, H:i" }}</span>
+                                    <span>
+                                        {{ post.like_count }} Likes
+                                        {% if user in post.liked_by.all %}
+                                        <a href="{% url 'post_like' post.id %}" class="ms-1">
+                                            <i class="fa-solid fa-heart text-danger"></i>
+                                        </a>
+                                        {% else %}
+                                        <a href="{% url 'post_like' post.id %}" class="ms-1">
+                                            <i class="fa fa-heart-o text-danger"></i>
+                                        </a>
+                                        {% endif %}
+                                    </span>
+                                    <a href="{% url 'post_show' post.id %}" class="text-muted">
+                                        <i class="fa-solid fa-share"></i> View
+                                    </a>
+
+                                    {% if request.user.username == profile.user.username %}
+                                    <a href="{% url 'edit_post' post.id %}" class="text-primary">
+                                        <i class="fa fa-edit"></i> Edit
+                                    </a>
+                                    <a href="{% url 'delete_post' post.id %}" class="text-danger">
+                                        <i class="fa fa-trash"></i> Delete
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-secondary">This user hasn't posted anything yet.</div>
+            {% endif %}
+        </div>
+
+        <!-- Profile Sidebar Column -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4 text-center">
+                <div class="card-body">
+                    {% if profile.profile_image %}
+                    <img src="{{ profile.profile_image.url }}" width="120" height="120" class="rounded-circle shadow-sm mb-3 object-fit-cover" alt="Profile Image">
+                    {% else %}
+                    <img src="{% static 'images/default_profile_pic.png' %}" width="120" height="120" class="rounded-circle shadow-sm mb-3 object-fit-cover" alt="Profile Image">
+                    {% endif %}
+
+                    <h4 class="card-title mb-1">{{ profile.user.get_full_name|default:profile.user.username }}</h4>
+                    <p class="text-muted mb-3">@{{ profile.user.username }}</p>
+
+                    {% if profile.bio %}
+                    <p class="card-text text-start small text-secondary bg-light p-3 rounded">
+                        {{ profile.bio }}
+                    </p>
+                    {% endif %}
+
+                    <!-- Social Links -->
+                    <div class="d-flex justify-content-center gap-3 fs-5 mb-3">
+                        {% if profile.website_url %}
+                        <a href="{{ profile.website_url }}" target="_blank" class="text-dark" title="Website"><i class="fa-solid fa-link"></i></a>
+                        {% endif %}
+                        {% if profile.facebook_url %}
+                        <a href="{{ profile.facebook_url }}" target="_blank" class="text-primary" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                        {% endif %}
+                        {% if profile.instagram_url %}
+                        <a href="{{ profile.instagram_url }}" target="_blank" class="text-danger" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                        {% endif %}
+                        {% if profile.linkedin_url %}
+                        <a href="{{ profile.linkedin_url }}" target="_blank" class="text-primary" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Follow / Unfollow Form -->
+                    {% if request.user != profile.user and user.is_authenticated %}
+                    <form method="POST" class="mb-3">
+                        {% csrf_token %}
+                        {% if profile in user.profile.following.all %}
+                        <button class="btn btn-outline-danger w-100" name="follow" value="unfollow" type="submit">
+                            Unfollow
+                        </button>
+                        {% else %}
+                        <button class="btn btn-primary w-100" name="follow" value="follow" type="submit">
+                            Follow
+                        </button>
+                        {% endif %}
+                    </form>
+                    {% endif %}
+
+                    {% if request.user.id == profile.user.id %}
+                    <a href="{% url 'update_user' %}" class="btn btn-outline-secondary w-100 mb-3">Edit Profile</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Following Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold">Following</h6>
+                    <a href="{% url 'follows' profile.user.id %}" class="small text-decoration-none">See All</a>
+                </div>
+                <div class="card-body">
+                    {% if profile.following.all %}
+                        <ul class="list-unstyled mb-0">
+                        {% for following in profile.following.all|slice:5 %}
+                            <li class="d-flex justify-content-between align-items-center mb-2">
+                                <a href="{% url 'profile' following.user.id %}" class="text-decoration-none text-dark">@{{ following }}</a>
+                                {% if request.user.id == profile.user.id %}
+                                <a href="{% url 'unfollow' following.user.id %}" class="text-muted small" title="Unfollow">
+                                    <i class="fa fa-user-minus"></i>
+                                </a>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted small mb-0">Not following anyone yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Followers Card -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold">Followers</h6>
+                    <a href="{% url 'followers' profile.user.id %}" class="small text-decoration-none">See All</a>
+                </div>
+                <div class="card-body">
+                    {% if profile.followers.all %}
+                        <ul class="list-unstyled mb-0">
+                        {% for follower in profile.followers.all|slice:5 %}
+                            <li class="d-flex justify-content-between align-items-center mb-2">
+                                <a href="{% url 'profile' follower.user.id %}" class="text-decoration-none text-dark">@{{ follower }}</a>
+                                {% if request.user.id == profile.user.id %}
+                                    {% if follower in profile.following.all %}
+                                    <a href="{% url 'unfollow' follower.user.id %}" class="text-muted small" title="Unfollow">
+                                        <i class="fa fa-user-minus"></i>
+                                    </a>
+                                    {% else %}
+                                    <a href="{% url 'follow' follower.user.id %}" class="text-primary small" title="Follow Back">
+                                        <i class="fa fa-user-plus"></i>
+                                    </a>
+                                    {% endif %}
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted small mb-0">No followers yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

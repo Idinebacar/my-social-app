@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Post Details</h2>
+                <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm">Back to Feed</a>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0 me-3">
+                            {% if post.user.profile.profile_image %}
+                            <img src="{{ post.user.profile.profile_image.url }}" width="50" height="50"
+                                class="rounded-circle object-fit-cover" alt="{{ post.user.username }}">
+                            {% else %}
+                            <img src="{% static 'images/default_profile_pic.png' %}" width="50" height="50"
+                                class="rounded-circle object-fit-cover" alt="{{ post.user.username }}">
+                            {% endif %}
+                        </div>
+
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1 fw-bold">
+                                <a href="{% url 'profile' post.user.id %}" class="text-dark text-decoration-none">@{{ post.user.username }}</a>
+                            </h6>
+                            <p class="mb-3 fs-5">{{ post.content }}</p>
+
+                            {% if post.post_image %}
+                            <div class="mb-3">
+                                <img src="{{ post.post_image.url }}" class="img-fluid rounded shadow-sm" style="max-height: 400px; width: 100%; object-fit: cover;" alt="Post image">
+                            </div>
+                            {% endif %}
+
+                            <div class="d-flex align-items-center text-muted small">
+                                <span class="me-3">{{ post.created_at|date:"M d, Y, H:i" }}</span>
+                                <span class="me-3">
+                                    {{ post.like_count }} Likes
+                                    {% if user in post.liked_by.all %}
+                                    <a href="{% url 'post_like' post.id %}" class="text-decoration-none ms-1">
+                                        <i class="fa-solid fa-heart text-danger"></i>
+                                    </a>
+                                    {% else %}
+                                    <a href="{% url 'post_like' post.id %}" class="text-decoration-none ms-1">
+                                        <i class="fa fa-heart-o text-danger"></i>
+                                    </a>
+                                    {% endif %}
+                                </span>
+
+                                {% if request.user.username == post.user.username %}
+                                <a href="{% url 'edit_post' post.id %}" class="text-primary text-decoration-none me-3">
+                                    <i class="fa fa-edit"></i> Edit
+                                </a>
+                                <a href="{% url 'delete_post' post.id %}" class="text-danger text-decoration-none">
+                                    <i class="fa fa-trash"></i> Delete
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -7,9 +7,11 @@ from django.db.models.signals import post_save
 
 class Post(models.Model):
 
-    user = models.ForeignKey( User, related_name="posts", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name="posts", on_delete=models.CASCADE)
 
     content = models.CharField(max_length=200)
+
+    post_image = models.ImageField(upload_to="posts/", null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

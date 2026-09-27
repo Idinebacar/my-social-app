@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Users Followed by {{ request.user.username }}</h2>
+
+    {% if profiles.following.all %}
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        {% for profile in profiles.following.all %}
+        <div class="col">
+            <div class="card shadow-sm h-100">
+                <div class="row g-0 align-items-center h-100">
+                    <div class="col-4 text-center p-3">
+                        {% if profile.profile_image %}
+                        <img src="{{ profile.profile_image.url }}" width="90" height="90" class="rounded-circle shadow-sm object-fit-cover"
+                            alt="{{ profile.user.username }}">
+                        {% else %}
+                        <img src="{% static 'images/default_profile_pic.png' %}" width="90" height="90" class="rounded-circle shadow-sm object-fit-cover"
+                            alt="Profile Image">
+                        {% endif %}
+                    </div>
+                    <div class="col-8">
+                        <div class="card-body">
+                            <h5 class="card-title mb-1">
+                                <a href="{% url 'profile' profile.user.id %}" class="text-decoration-none text-dark">@{{ profile.user.username }}</a>
+                            </h5>
+                            <p class="card-text mb-2 small text-muted">Last Updated: {{ profile.updated_at|date:"M d, Y" }}</p>
+
+                            <a href="{% url 'unfollow' profile.user.id %}" class="btn btn-outline-danger btn-sm">
+                                <i class="fa fa-user-minus"></i> Unfollow
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">You are not following anyone yet.</div>
+    {% endif %}
+</div>
+
+{% endblock %}

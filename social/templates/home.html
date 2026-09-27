@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container py-4">
+    <div class="row">
+        <!-- Main Feed (Posts) -->
+        <div class="col-lg-8 mb-4">
+            <h2 class="mb-4">Feed</h2>
+
+            {% if posts %}
+                {% for post in posts %}
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0 me-3">
+                                {% if post.user.profile.profile_image %}
+                                <img src="{{ post.user.profile.profile_image.url }}" width="50" height="50"
+                                    class="rounded-circle object-fit-cover" alt="{{ post.user.username }}">
+                                {% else %}
+                                <img src="{% static 'images/default_profile_pic.png' %}" width="50" height="50"
+                                    class="rounded-circle object-fit-cover" alt="{{ post.user.username }}">
+                                {% endif %}
+                            </div>
+
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 fw-bold">
+                                    <a href="{% url 'profile' post.user.id %}" 
+                                    class="text-dark text-decoration-none">@{{ post.user.username }}</a>
+                                </h6>
+                                <p class="mb-2">{{ post.content }}</p>
+
+                                {% if post.post_image %}
+                                <div class="mb-3">
+                                    <img src="{{ post.post_image.url }}" 
+                                    class="img-fluid rounded shadow-sm" 
+                                    style="max-height: 350px; width: 100%; object-fit: cover;" alt="Post image">
+                                </div>
+                                {% endif %}
+
+                                <div class="d-flex align-items-center text-muted small">
+                                    <span class="me-3">{{ post.created_at|date:"M d, Y, H:i" }}</span>
+                                    <span class="me-3">
+                                        {{ post.like_count }}
+                                        {% if user in post.liked_by.all %}
+                                        <a href="{% url 'post_like' post.id %}"
+                                         class="text-decoration-none ms-1">
+                                            <i class="fa-solid fa-heart text-danger"></i>
+                                        </a>
+                                        {% else %}
+                                        <a href="{% url 'post_like' post.id %}" 
+                                        class="text-decoration-none ms-1">
+                                            <i class="fa fa-heart-o text-danger"></i>
+                                        </a>
+                                        {% endif %}
+                                    </span>
+                                    <a href="{% url 'post_show' post.id %}"
+                                     class="text-decoration-none text-muted">
+                                        <i class="fa-solid fa-share"></i> Share
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Pagination -->
+                {% if posts.has_other_pages %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if posts.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ posts.previous_page_number }}">Previous</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Previous</span>
+                        </li>
+                        {% endif %}
+
+                        <li class="page-item disabled">
+                            <span class="page-link">Page {{ posts.number }} of {{ posts.paginator.num_pages }}</span>
+                        </li>
+
+                        {% if posts.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ posts.next_page_number }}">Next</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Next</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+
+            {% else %}
+                <div class="alert alert-info" role="alert">
+                    No posts yet. Follow other users or create your first post!
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar / Create Post Form -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm sticky-top" style="top: 2rem;">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Create Post</h5>
+                    {% if form %}
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ form.as_p }}
+                            <div class="form-text text-end small text-muted" id="charCount">200 chars left</div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Post</button>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const textarea = document.getElementById('postContentInput');
+        const charCount = document.getElementById('charCount');
+        if (textarea && charCount) {
+            const maxLength = textarea.getAttribute('maxlength') || 200;
+            textarea.addEventListener('input', function() {
+                const remaining = maxLength - textarea.value.length;
+                charCount.textContent = `${remaining} chars left`;
+            });
+        }
+    });
+</script>
+
+{% endblock %}

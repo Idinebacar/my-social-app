@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+
+            <h3 class="mb-4 text-center">Edit Post</h3>
+
+            <!-- Post Preview Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <!-- Profile Image -->
+                        <div class="flex-shrink-0 me-3">
+                            {% if post.user.profile.profile_image %}
+                            <img src="{{ post.user.profile.profile_image.url }}" width="50" height="50"
+                                class="rounded-circle object-fit-cover" alt="{{ post.user.username }}">
+                            {% else %}
+                            <img src="{% static 'images/default_profile_pic.png' %}" width="50" height="50"
+                                class="rounded-circle object-fit-cover" alt="{{ post.user.username }}">
+                            {% endif %}
+                        </div>
+
+                        <!-- Post Content & Meta -->
+                        <div class="flex-grow-1">
+                            <p class="mb-1">{{ post.content }}</p>
+                            {% if post.post_image %}
+                            <div class="mb-2">
+                                <img src="{{ post.post_image.url }}" class="img-fluid rounded" style="max-height: 200px; width: 100%; object-fit: cover;" alt="Post image">
+                            </div>
+                            {% endif %}
+                            <small class="text-muted">
+                                ({{ post.created_at }}) By @{{ post.user.username }}
+                                - {{ post.like_count }} Likes -
+                                {% if user in post.liked_by.all %}
+                                <a href="{% url 'post_like' post.id %}" class="text-decoration-none">
+                                    <i class="fa-solid fa-heart" style="color:red"></i>
+                                </a>
+                                {% else %}
+                                <a href="{% url 'post_like' post.id %}" class="text-decoration-none">
+                                    <i class="fa fa-heart-o" style="color:red"></i>
+                                </a>
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Form -->
+            {% if form %}
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <div class="d-grid gap-2 mt-3">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <a href="{% url 'home' %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
