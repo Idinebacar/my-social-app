@@ -13,11 +13,7 @@ class Post(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-    liked_by = models.ManyToManyField(
-        User,
-        related_name="liked_posts",
-        blank=True
-    )
+    liked_by = models.ManyToManyField(User, related_name="liked_posts", blank=True)
 
     def like_count(self):
         return self.liked_by.count()
